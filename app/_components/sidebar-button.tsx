@@ -15,7 +15,7 @@ const SidebarButton = ({ children, link }: SidebarButtonProps) => {
   return (
     <Button
       variant={`${isActive ? "secondary" : "ghost"}`}
-      className={`${isActive ? "text-primary" : ""} h-12 w-full justify-start text-base`}
+      className={`${isActive ? "bg-secondary/50 text-primary" : ""} h-12 w-full justify-start text-base hover:text-primary/80`}
       asChild
     >
       <Link href={link}>{children}</Link>
