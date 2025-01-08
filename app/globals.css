@@ -2,26 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply h-full bg-background text-muted-foreground;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 157 0% 95%;
+    --foreground: 157 0% 10%;
+    --card: 157 0% 90%;
+    --card-foreground: 157 0% 12%;
+    --popover: 157 0% 95%;
+    --popover-foreground: 157 95% 10%;
+    --primary: 157 78% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 157 8% 80%;
+    --secondary-foreground: 157 50% 25%;
+    --muted: 119 10% 85%;
+    --muted-foreground: 157 0% 35%;
+    --accent: 119 10% 80%;
+    --accent-foreground: 157 50% 12%;
+    --destructive: 0 50% 30%;
+    --destructive-foreground: 157 0% 90%;
+    --border: 157 20% 50%;
+    --input: 157 20% 18%;
+    --ring: 157 78% 35%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 157 10% 10%;
+    --foreground: 157 0% 90%;
+    --card: 157 0% 10%;
+    --card-foreground: 157 0% 90%;
+    --popover: 157 10% 5%;
+    --popover-foreground: 157 0% 90%;
+    --primary: 157 78% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 157 10% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 119 10% 15%;
+    --muted-foreground: 157 0% 60%;
+    --accent: 119 10% 15%;
+    --accent-foreground: 157 0% 90%;
+    --destructive: 0 50% 30%;
+    --destructive-foreground: 157 0% 90%;
+    --border: 157 20% 18%;
+    --input: 157 20% 18%;
+    --ring: 157 78% 35%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
