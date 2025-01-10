@@ -1,9 +1,8 @@
-import { PlusIcon } from "lucide-react";
-import { Button } from "../_components/ui/button";
 
 import { DataTable } from "../_components/ui/data-table";
 import { productTableColumns } from "./_componentes/table-columns";
 import { getProducts } from "../_data-access/products/get-products";
+import AddProductDialog from "./_componentes/add-product-dialog";
 
 const Products = async () => {
   const products = await getProducts();
@@ -15,10 +14,8 @@ const Products = async () => {
           <span className="text-primary">Gestão de produtos</span>
           <h2 className="text-2xl font-semibold text-foreground">Produtos</h2>
         </div>
-        <Button className="self-end">
-          <PlusIcon size={20} />
-          Novo produto
-        </Button>
+
+        <AddProductDialog/>
       </div>
 
       <DataTable
