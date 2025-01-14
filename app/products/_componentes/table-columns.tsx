@@ -4,9 +4,26 @@ import { Product } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/app/_components/ui/badge";
 import { Circle } from "lucide-react";
+import { Button } from "@/app/_components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/_components/ui/dropdown-menu";
+import {
+  ClipboardCopy,
+  ClipboardPen,
+  MoreHorizontalIcon,
+  TrashIcon,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+} from "@/app/_components/ui/alert-dialog";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+import DeleteProductAlert from "./delete-product";
 
 const getStatusLabel = (stock: Product["stock"]) => {
   if (stock > 0) {
@@ -46,6 +63,44 @@ export const productTableColumns: ColumnDef<Product>[] = [
           />
           {label}
         </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "actions",
+    header: "Ações",
+    cell: (row) => {
+      const product = row.row.original;
+
+      return (
+        <AlertDialog>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant={"ghost"} size={"icon"} className="h-6 w-6">
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(product.id)}
+              >
+                <ClipboardCopy /> Copiar ID
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <ClipboardPen /> Editar
+              </DropdownMenuItem>
+
+              <AlertDialogTrigger>
+                <DropdownMenuItem>
+                  <TrashIcon /> Deletar
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+            </DropdownMenuContent>
+
+            <DeleteProductAlert productId={product.id} />
+          </DropdownMenu>
+        </AlertDialog>
       );
     },
   },
