@@ -1,10 +1,15 @@
 "use server";
 import { db } from "@/app/_lib/prisma";
 import { revalidatePath } from "next/cache";
-import { createProductSchema, ProductFormSchema } from "./schema";
+import { upsertProductSchema, ProductFormSchema } from "./schema";
 
-export const createProduct = async (data: ProductFormSchema) => {
-  createProductSchema.parse(data);
-  await db.product.create({ data });
+export const upsertProduct = async (data: ProductFormSchema) => {
+  upsertProductSchema.parse(data);
+
+  await db.product.upsert({
+    where: { id: data.id ?? "" },
+    update: data,
+    create: data,
+  });
   revalidatePath("/products");
 };

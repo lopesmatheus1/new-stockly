@@ -22,42 +22,54 @@ import { useForm } from "react-hook-form";
 import { Loader2Icon } from "lucide-react";
 import { NumericFormat } from "react-number-format";
 
-import { createProduct } from "@/app/_actions/product/create-product";
+import { upsertProduct } from "@/app/_actions/product/create-product";
 import {
   ProductFormSchema,
-  createProductSchema,
+  upsertProductSchema,
 } from "@/app/_actions/product/create-product/schema";
+import { useToast } from "@/app/_hooks/use-toast";
 
 interface UpsertDialogContentProps {
+  defaultValues?: ProductFormSchema;
   updateDialog?: () => void;
 }
 
-const UpsertDialogContent = ({ updateDialog }: UpsertDialogContentProps) => {
+const UpsertDialogContent = ({
+  defaultValues,
+  updateDialog,
+}: UpsertDialogContentProps) => {
   const form = useForm<ProductFormSchema>({
     shouldUnregister: true,
-    resolver: zodResolver(createProductSchema),
-    defaultValues: {
+    resolver: zodResolver(upsertProductSchema),
+    defaultValues: defaultValues ?? {
       name: "",
       price: 1,
       stock: 0,
     },
   });
 
+  const { toast } = useToast();
   async function onSubmit(data: ProductFormSchema) {
     try {
-      await createProduct(data);
+      await upsertProduct({ ...data, id: defaultValues?.id });
       updateDialog?.();
+      if (isEditing)
+        return toast({ description: "Tarefa editada com sucesso" });
+
+      return toast({ description: "Tarefa criada com sucesso" });
     } catch (error) {
       console.error(error);
     }
   }
+
+  const isEditing = !!defaultValues;
   return (
     <DialogContent>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <DialogHeader>
             <DialogTitle className="text-accent-foreground">
-              Cadastrar produto
+              {isEditing ? "Editar produto" : "Cadastrar produto"}
             </DialogTitle>
             <DialogDescription>
               insira as informações do produto abaixo
@@ -133,7 +145,7 @@ const UpsertDialogContent = ({ updateDialog }: UpsertDialogContentProps) => {
               {form.formState.isSubmitting && (
                 <Loader2Icon size={15} className="animate-spin" />
               )}
-              Adicionar
+              {isEditing ? "Editar" : "Cadastrar"}
             </Button>
           </DialogFooter>
         </form>

@@ -24,6 +24,9 @@ import {
 } from "@/app/_components/ui/alert-dialog";
 
 import DeleteProductAlert from "./delete-product";
+import { Dialog, DialogTrigger } from "@/app/_components/ui/dialog";
+import UpsertDialogContent from "./upsert-dialog-conent";
+import { useState } from "react";
 
 const getStatusLabel = (stock: Product["stock"]) => {
   if (stock > 0) {
@@ -71,35 +74,49 @@ export const productTableColumns: ColumnDef<Product>[] = [
     header: "Ações",
     cell: (row) => {
       const product = row.row.original;
-
+      const [dialogIsOpen, setDialogIsOpen] = useState(false);
       return (
         <AlertDialog>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant={"ghost"} size={"icon"} className="h-6 w-6">
-                <MoreHorizontalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(product.id)}
-              >
-                <ClipboardCopy /> Copiar ID
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <ClipboardPen /> Editar
-              </DropdownMenuItem>
-
-              <AlertDialogTrigger>
-                <DropdownMenuItem>
-                  <TrashIcon /> Deletar
+          <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant={"ghost"} size={"icon"} className="h-6 w-6">
+                  <MoreHorizontalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="flex flex-col">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(product.id)}
+                >
+                  <ClipboardCopy /> Copiar ID
                 </DropdownMenuItem>
-              </AlertDialogTrigger>
-            </DropdownMenuContent>
 
-            <DeleteProductAlert productId={product.id} />
-          </DropdownMenu>
+                <DialogTrigger>
+                  <DropdownMenuItem>
+                    <ClipboardPen /> Editar
+                  </DropdownMenuItem>
+                </DialogTrigger>
+
+                <AlertDialogTrigger>
+                  <DropdownMenuItem>
+                    <TrashIcon /> Deletar
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+              </DropdownMenuContent>
+
+              <UpsertDialogContent
+                defaultValues={{
+                  id: product.id,
+                  name: product.name,
+                  price: Number(product.price),
+                  stock: product.stock,
+                }}
+                updateDialog={() => setDialogIsOpen(false)}
+              />
+              <DeleteProductAlert productId={product.id} />
+            </DropdownMenu>
+          </Dialog>
         </AlertDialog>
       );
     },
