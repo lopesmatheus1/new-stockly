@@ -1,0 +1,193 @@
+"use client";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/app/_components/ui/sheet";
+import { Button } from "@/app/_components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/_components/ui/form";
+import { Input } from "@/app/_components/ui/input";
+import { Combobox, ComboboxOption } from "@/app/_components/ui/combobox";
+import { PlusIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Product } from "@prisma/client";
+import {
+  Table,
+  TableCaption,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  TableFooter,
+} from "@/app/_components/ui/table";
+import { FormatCurrency } from "@/app/_helpers/currency";
+
+interface UpsertSheetContentProps {
+  productOptions: ComboboxOption[];
+  products: Product[];
+}
+
+type FormSchema = z.infer<typeof formSchema>;
+
+const formSchema = z.object({
+  productId: z.string().uuid({ message: "O produto é obrigatório!" }),
+  quantity: z.coerce
+    .number()
+    .int()
+    .positive({ message: "A quantidade vendida precisa ser maior que 0" }),
+});
+
+interface SelectedProduct {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+const UpsertSheetContent = ({
+  productOptions,
+  products,
+}: UpsertSheetContentProps) => {
+  const [selectedProduct, setSelectedProduct] = useState<SelectedProduct[]>([]);
+
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      productId: "",
+      quantity: 1,
+    },
+  });
+
+  const onSubmit = (data: FormSchema) => {
+    const selectedProduct = products.find(
+      (product) => product.id === data.productId,
+    );
+    if (!selectedProduct) return;
+
+    setSelectedProduct((currentProduct) => {
+      const existingProducts = currentProduct.find(
+        (product) => product.id === selectedProduct.id,
+      );
+      if (existingProducts) {
+        return currentProduct.map((product) => {
+          if (product.id === selectedProduct.id) {
+            return {
+              ...product,
+              quantity: product.quantity + data.quantity,
+            };
+          }
+          return product;
+        });
+      }
+      return [
+        ...currentProduct,
+        {
+          ...selectedProduct,
+          quantity: data.quantity,
+          price: Number(selectedProduct.price),
+        },
+      ];
+    });
+
+    form.reset();
+  };
+
+  const productsTotal = useMemo(() => {
+    return selectedProduct.reduce((acc, product) => {
+      return acc + product.price * product.quantity;
+    }, 0);
+  }, [selectedProduct]);
+  return (
+    <SheetContent className="!max-w-[700px]">
+      <SheetHeader>
+        <SheetTitle>Nova venda</SheetTitle>
+        <SheetDescription>Insira as informações abaixo.</SheetDescription>
+      </SheetHeader>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-6">
+          <FormField
+            control={form.control}
+            name="productId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Produto vendido</FormLabel>
+                <FormControl>
+                  <Combobox
+                    options={productOptions}
+                    placeholder="Produto"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade vendida</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="Quantidade" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" variant={"outline"} className="w-full">
+            <PlusIcon />
+            Adicionar venda
+          </Button>
+        </form>
+      </Form>
+
+      <Table>
+        <TableCaption>Lista dos produtos adicionados à venda.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Produto</TableHead>
+            <TableHead>Preço unitário</TableHead>
+            <TableHead>Quantidade</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {selectedProduct.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>{product.name}</TableCell>
+              <TableCell>{FormatCurrency(product.price)}</TableCell>
+              <TableCell>{product.quantity}</TableCell>
+              <TableCell>
+                {FormatCurrency(product.price * product.quantity)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={3}>Total</TableCell>
+            <TableCell>{FormatCurrency(productsTotal)}</TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </SheetContent>
+  );
+};
+
+export default UpsertSheetContent;
