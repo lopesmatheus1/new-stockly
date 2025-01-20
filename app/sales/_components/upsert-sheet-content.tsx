@@ -33,6 +33,7 @@ import {
   TableFooter,
 } from "@/app/_components/ui/table";
 import { FormatCurrency } from "@/app/_helpers/currency";
+import SalesTableDropdownMenu from "./table-dropdown-menu";
 
 interface UpsertSheetContentProps {
   productOptions: ComboboxOption[];
@@ -109,6 +110,14 @@ const UpsertSheetContent = ({
       return acc + product.price * product.quantity;
     }, 0);
   }, [selectedProduct]);
+
+  const onDelete = (productId: string) => {
+    const newProducts = selectedProduct.filter(
+      (product) => product.id !== productId,
+    );
+    setSelectedProduct(newProducts);
+  };
+
   return (
     <SheetContent className="!max-w-[700px]">
       <SheetHeader>
@@ -163,7 +172,8 @@ const UpsertSheetContent = ({
             <TableHead>Produto</TableHead>
             <TableHead>Preço unitário</TableHead>
             <TableHead>Quantidade</TableHead>
-            <TableHead className="text-right">Total</TableHead>
+            <TableHead>Total</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -175,6 +185,9 @@ const UpsertSheetContent = ({
               <TableCell>
                 {FormatCurrency(product.price * product.quantity)}
               </TableCell>
+              <TableCell>
+                <SalesTableDropdownMenu onDelete={onDelete} product={product} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -183,6 +196,7 @@ const UpsertSheetContent = ({
           <TableRow>
             <TableCell colSpan={3}>Total</TableCell>
             <TableCell>{FormatCurrency(productsTotal)}</TableCell>
+            <TableCell></TableCell>
           </TableRow>
         </TableFooter>
       </Table>
