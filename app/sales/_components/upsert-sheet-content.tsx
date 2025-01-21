@@ -20,7 +20,7 @@ import {
 } from "@/app/_components/ui/form";
 import { Input } from "@/app/_components/ui/input";
 import { Combobox, ComboboxOption } from "@/app/_components/ui/combobox";
-import { CheckIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Product } from "@prisma/client";
 import {
@@ -66,6 +66,7 @@ const UpsertSheetContent = ({
   products,
   onSubmitSuccess,
 }: UpsertSheetContentProps) => {
+  const [isSubmiting, setIsSubmiting] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<SelectedProduct[]>([]);
   const { toast } = useToast();
   const form = useForm<FormSchema>({
@@ -149,6 +150,7 @@ const UpsertSheetContent = ({
       form.reset();
       onSubmitSuccess();
       setSelectedProduct([]);
+      setIsSubmiting(false);
       return toast({ description: "Venda realizada com sucesso" });
     } catch (error) {
       console.log(error);
@@ -245,10 +247,17 @@ const UpsertSheetContent = ({
       <SheetFooter className="pt-6">
         <Button
           className="w-full"
-          disabled={selectedProduct.length === 0 || form.formState.isSubmitting}
-          onClick={onSubmitSale}
+          disabled={selectedProduct.length === 0 || isSubmiting}
+          onClick={() => {
+            onSubmitSale();
+            setIsSubmiting(true);
+          }}
         >
-          <CheckIcon />
+          {isSubmiting ? (
+            <Loader2Icon size={18} className="animate-spin" />
+          ) : (
+            <CheckIcon />
+          )}
           Finalizar venda
         </Button>
       </SheetFooter>
