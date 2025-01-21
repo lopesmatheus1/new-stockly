@@ -9,12 +9,7 @@ import {
 
 import { Product } from "@prisma/client";
 
-import {
-  ClipboardCopy,
-  ClipboardPen,
-  MoreHorizontalIcon,
-  TrashIcon,
-} from "lucide-react";
+import { ClipboardCopy, MoreHorizontalIcon, TrashIcon } from "lucide-react";
 
 interface SalesTableDropdownMenuProps {
   product: Pick<Product, "id">;

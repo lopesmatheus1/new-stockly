@@ -7,6 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 } from "@/app/_components/ui/sheet";
 import { Button } from "@/app/_components/ui/button";
 import {
@@ -19,7 +20,7 @@ import {
 } from "@/app/_components/ui/form";
 import { Input } from "@/app/_components/ui/input";
 import { Combobox, ComboboxOption } from "@/app/_components/ui/combobox";
-import { PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Product } from "@prisma/client";
 import {
@@ -34,10 +35,13 @@ import {
 } from "@/app/_components/ui/table";
 import { FormatCurrency } from "@/app/_helpers/currency";
 import SalesTableDropdownMenu from "./table-dropdown-menu";
+import { createSale } from "@/app/_actions/sales/create-sale";
+import { useToast } from "@/app/_hooks/use-toast";
 
 interface UpsertSheetContentProps {
   productOptions: ComboboxOption[];
   products: Product[];
+  onSubmitSuccess: () => void;
 }
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -60,9 +64,10 @@ interface SelectedProduct {
 const UpsertSheetContent = ({
   productOptions,
   products,
+  onSubmitSuccess,
 }: UpsertSheetContentProps) => {
   const [selectedProduct, setSelectedProduct] = useState<SelectedProduct[]>([]);
-
+  const { toast } = useToast();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -131,6 +136,27 @@ const UpsertSheetContent = ({
       (product) => product.id !== productId,
     );
     setSelectedProduct(newProducts);
+  };
+
+  const onSubmitSale = async () => {
+    try {
+      await createSale({
+        products: selectedProduct.map((product) => ({
+          id: product.id,
+          quantity: product.quantity,
+        })),
+      });
+      form.reset();
+      onSubmitSuccess();
+      setSelectedProduct([]);
+      return toast({ description: "Venda realizada com sucesso" });
+    } catch (error) {
+      console.log(error);
+      return toast({
+        variant: "destructive",
+        description: "Ocorreu um erro ao realizar a venda.",
+      });
+    }
   };
 
   return (
@@ -215,6 +241,17 @@ const UpsertSheetContent = ({
           </TableRow>
         </TableFooter>
       </Table>
+
+      <SheetFooter className="pt-6">
+        <Button
+          className="w-full"
+          disabled={selectedProduct.length === 0 || form.formState.isSubmitting}
+          onClick={onSubmitSale}
+        >
+          <CheckIcon />
+          Finalizar venda
+        </Button>
+      </SheetFooter>
     </SheetContent>
   );
 };
