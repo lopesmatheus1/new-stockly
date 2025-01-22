@@ -1,5 +1,7 @@
 import { z } from "zod";
 
-export const idProductSchema = z.string().uuid();
+export const deleteProductSchema = z.object({
+  id: z.string().uuid(),
+});
 
-export type IdProductSchema = z.infer<typeof idProductSchema>;
+export type DeleteProductSchema = z.infer<typeof deleteProductSchema>;

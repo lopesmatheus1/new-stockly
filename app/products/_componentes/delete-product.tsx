@@ -1,5 +1,5 @@
 import { deleteProduct } from "@/app/_actions/product/delete-product";
-import { IdProductSchema } from "@/app/_actions/product/delete-product/schema";
+import { DeleteProductSchema } from "@/app/_actions/product/delete-product/schema";
 import {
   AlertDialogHeader,
   AlertDialogFooter,
@@ -10,24 +10,31 @@ import {
   AlertDialogAction,
 } from "@/app/_components/ui/alert-dialog";
 import { useToast } from "@/app/_hooks/use-toast";
+import { flattenValidationErrors } from "next-safe-action";
+import { useAction } from "next-safe-action/hooks";
 
 interface DeleteDialogProps {
-  productId: IdProductSchema;
+  productId: string;
 }
 
 const DeleteProductAlert = ({ productId }: DeleteDialogProps) => {
   const { toast } = useToast();
-  const handleDeleteClick = async () => {
-    try {
-      deleteProduct(productId);
 
+  const { execute: executeDeleteProduct } = useAction(deleteProduct, {
+    onError: ({ error: { serverError, validationErrors } }) => {
+      const flattenedErrors = flattenValidationErrors(validationErrors);
       toast({
-        description: "Tarefa deletada com sucesso!",
+        variant: "destructive",
+        description: serverError ?? flattenedErrors.formErrors[0],
       });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    },
+    onSuccess: () => {
+      toast({
+        description: "Produto deletada com sucesso!",
+      });
+    },
+  });
+
   return (
     <AlertDialogContent>
       <AlertDialogHeader>
@@ -39,7 +46,9 @@ const DeleteProductAlert = ({ productId }: DeleteDialogProps) => {
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-        <AlertDialogAction onClick={handleDeleteClick}>
+        <AlertDialogAction
+          onClick={() => executeDeleteProduct({ id: productId })}
+        >
           Continuar
         </AlertDialogAction>
       </AlertDialogFooter>
