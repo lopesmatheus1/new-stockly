@@ -37,6 +37,9 @@ import { FormatCurrency } from "@/app/_helpers/currency";
 import SalesTableDropdownMenu from "./table-dropdown-menu";
 import { createSale } from "@/app/_actions/sales/create-sale";
 import { useToast } from "@/app/_hooks/use-toast";
+import { useAction } from "next-safe-action/hooks";
+import { flattenValidationErrors } from "next-safe-action";
+import { error } from "console";
 
 interface UpsertSheetContentProps {
   productOptions: ComboboxOption[];
@@ -77,6 +80,25 @@ const UpsertSheetContent = ({
     },
   });
 
+  const { execute: executeCreateSale } = useAction(createSale, {
+    onError: ({ error: { validationErrors, serverError } }) => {
+      const flattenedErrors = flattenValidationErrors(validationErrors);
+      toast({
+        variant: "destructive",
+        description: serverError ?? flattenedErrors.formErrors[0],
+      });
+      setIsSubmiting(false);
+      setSelectedProduct([]);
+    },
+    onSuccess: () => {
+      form.reset();
+      onSubmitSuccess();
+      setSelectedProduct([]);
+      setIsSubmiting(false);
+      toast({ description: "Venda criada com sucesso" });
+    },
+  });
+
   const onSubmit = (data: FormSchema) => {
     const selectedProduct = products.find(
       (product) => product.id === data.productId,
@@ -88,14 +110,14 @@ const UpsertSheetContent = ({
         (product) => product.id === selectedProduct.id,
       );
       if (existingProducts) {
-        const productIsOutOfStock =
-          existingProducts.quantity + data.quantity > selectedProduct.stock;
-        if (productIsOutOfStock) {
-          form.setError("quantity", {
-            message: "Quantidade indisponível no estoque.",
-          });
-          return currentProduct;
-        }
+        // const productIsOutOfStock =
+        //   existingProducts.quantity + data.quantity > selectedProduct.stock;
+        // if (productIsOutOfStock) {
+        //   form.setError("quantity", {
+        //     message: "Quantidade indisponível no estoque.",
+        //   });
+        //   return currentProduct;
+        // }
         form.reset();
         return currentProduct.map((product) => {
           if (product.id === selectedProduct.id) {
@@ -107,13 +129,13 @@ const UpsertSheetContent = ({
           return product;
         });
       }
-      const productIsOutOfStock = data.quantity > selectedProduct.stock;
-      if (productIsOutOfStock) {
-        form.setError("quantity", {
-          message: "Quantidade indisponível no estoque.",
-        });
-        return currentProduct;
-      }
+      // const productIsOutOfStock = data.quantity > selectedProduct.stock;
+      // if (productIsOutOfStock) {
+      //   form.setError("quantity", {
+      //     message: "Quantidade indisponível no estoque.",
+      //   });
+      //   return currentProduct;
+      // }
       form.reset();
       return [
         ...currentProduct,
@@ -139,26 +161,13 @@ const UpsertSheetContent = ({
     setSelectedProduct(newProducts);
   };
 
-  const onSubmitSale = async () => {
-    try {
-      await createSale({
-        products: selectedProduct.map((product) => ({
-          id: product.id,
-          quantity: product.quantity,
-        })),
-      });
-      form.reset();
-      onSubmitSuccess();
-      setSelectedProduct([]);
-      setIsSubmiting(false);
-      return toast({ description: "Venda realizada com sucesso" });
-    } catch (error) {
-      console.log(error);
-      return toast({
-        variant: "destructive",
-        description: "Ocorreu um erro ao realizar a venda.",
-      });
-    }
+  const onSubmitSale = () => {
+    executeCreateSale({
+      products: selectedProduct.map((product) => ({
+        id: product.id,
+        quantity: product.quantity,
+      })),
+    });
   };
 
   return (
@@ -201,7 +210,11 @@ const UpsertSheetContent = ({
               </FormItem>
             )}
           />
-          <Button type="submit" variant={"outline"} className="w-full">
+          <Button
+            type="submit"
+            variant={"outline"}
+            className="w-full text-foreground"
+          >
             <PlusIcon />
             Adicionar venda
           </Button>
