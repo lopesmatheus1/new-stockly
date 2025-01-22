@@ -112,7 +112,7 @@ export const productTableColumns: ColumnDef<Product>[] = [
                   price: Number(product.price),
                   stock: product.stock,
                 }}
-                updateDialog={() => setDialogIsOpen(false)}
+                setDialogIsOpen={setDialogIsOpen}
               />
               <DeleteProductAlert productId={product.id} />
             </DropdownMenu>

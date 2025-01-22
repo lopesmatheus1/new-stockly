@@ -28,16 +28,20 @@ import {
   upsertProductSchema,
 } from "@/app/_actions/product/create-product/schema";
 import { useToast } from "@/app/_hooks/use-toast";
+import { useAction } from "next-safe-action/hooks";
+import { Dispatch, SetStateAction } from "react";
 
 interface UpsertDialogContentProps {
   defaultValues?: ProductFormSchema;
-  updateDialog?: () => void;
+  setDialogIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const UpsertDialogContent = ({
   defaultValues,
-  updateDialog,
+  setDialogIsOpen,
 }: UpsertDialogContentProps) => {
+  const isEditing = !!defaultValues;
+  const { toast } = useToast();
   const form = useForm<ProductFormSchema>({
     shouldUnregister: true,
     resolver: zodResolver(upsertProductSchema),
@@ -48,21 +52,25 @@ const UpsertDialogContent = ({
     },
   });
 
-  const { toast } = useToast();
-  async function onSubmit(data: ProductFormSchema) {
-    try {
-      await upsertProduct({ ...data, id: defaultValues?.id });
-      updateDialog?.();
-      if (isEditing)
-        return toast({ description: "Tarefa editada com sucesso" });
+  const { execute: executeUpsertProduct } = useAction(upsertProduct, {
+    onError: ({ error: { serverError } }) => {
+      toast({
+        description: serverError ?? "Erro ao criar produto",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      setDialogIsOpen(false);
+      isEditing
+        ? toast({ description: "Produto editado com sucesso" })
+        : toast({ description: "Produto criado com sucesso" });
+    },
+  });
 
-      return toast({ description: "Tarefa criada com sucesso" });
-    } catch (error) {
-      console.error(error);
-    }
+  async function onSubmit(data: ProductFormSchema) {
+    executeUpsertProduct({ ...data, id: defaultValues?.id });
   }
 
-  const isEditing = !!defaultValues;
   return (
     <DialogContent>
       <Form {...form}>
