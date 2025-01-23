@@ -20,18 +20,18 @@ model Product {
   stock        Int
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  saleProducts saleProduct[]
+  saleProducts SaleProduct[]
 }
 
 model Sale {
-  id        String        @id @default(uuid())
-  date      DateTime
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  products  saleProduct[]
+  id           String        @id @default(uuid())
+  date         DateTime
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  saleProducts SaleProduct[]
 }
 
-model saleProduct {
+model SaleProduct {
   id        String   @id @default(uuid())
   saleId    String
   sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
