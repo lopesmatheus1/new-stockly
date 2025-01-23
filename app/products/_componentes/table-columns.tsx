@@ -27,6 +27,8 @@ import DeleteProductAlert from "./delete-product";
 import { Dialog, DialogTrigger } from "@/app/_components/ui/dialog";
 import UpsertDialogContent from "./upsert-dialog-conent";
 import { useState } from "react";
+import { FormatCurrency } from "@/app/_helpers/currency";
+import { ProductsDto } from "@/app/_data-access/products/get-products";
 
 const getStatusLabel = (stock: Product["stock"]) => {
   if (stock > 0) {
@@ -35,7 +37,7 @@ const getStatusLabel = (stock: Product["stock"]) => {
   return "Fora de estoque";
 };
 
-export const productTableColumns: ColumnDef<Product>[] = [
+export const productTableColumns: ColumnDef<ProductsDto>[] = [
   {
     accessorKey: "name",
     header: "Nome",
@@ -43,6 +45,10 @@ export const productTableColumns: ColumnDef<Product>[] = [
   {
     accessorKey: "price",
     header: "Valor unitário",
+    cell: (row) => {
+      const price = row.row.original.price;
+      return <p>{FormatCurrency(Number(price))}</p>;
+    },
   },
   {
     accessorKey: "stock",

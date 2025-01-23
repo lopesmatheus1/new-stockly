@@ -14,7 +14,3 @@ export const upsertProduct = actionClient
     });
     revalidatePath("/products");
   });
-
-// export const upsertProduct = async (data: ProductFormSchema) => {
-//   upsertProductSchema.parse(data);
-// };
