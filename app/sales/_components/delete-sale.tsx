@@ -1,4 +1,4 @@
-import { deleteProduct } from "@/app/_actions/product/delete-product";
+import { deleteSale } from "@/app/_actions/sales/delete-sale";
 import {
   AlertDialogHeader,
   AlertDialogFooter,
@@ -9,17 +9,19 @@ import {
   AlertDialogAction,
 } from "@/app/_components/ui/alert-dialog";
 import { useToast } from "@/app/_hooks/use-toast";
+import { Sale } from "@prisma/client";
 import { flattenValidationErrors } from "next-safe-action";
+
 import { useAction } from "next-safe-action/hooks";
 
-interface DeleteDialogProps {
-  productId: string;
+interface DeleteSaleAlertProps {
+  sale: Pick<Sale, "id">;
 }
 
-const DeleteProductAlert = ({ productId }: DeleteDialogProps) => {
+const DeleteSaleAlert = ({ sale }: DeleteSaleAlertProps) => {
   const { toast } = useToast();
 
-  const { execute: executeDeleteProduct } = useAction(deleteProduct, {
+  const { execute: executeDeleteSale } = useAction(deleteSale, {
     onError: ({ error: { serverError, validationErrors } }) => {
       const flattenedErrors = flattenValidationErrors(validationErrors);
       toast({
@@ -28,11 +30,13 @@ const DeleteProductAlert = ({ productId }: DeleteDialogProps) => {
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Produto deletada com sucesso!",
-      });
+      toast({ description: "Venda deletada com sucesso" });
     },
   });
+
+  const onDeleteClick = () => {
+    executeDeleteSale({ id: sale.id });
+  };
 
   return (
     <AlertDialogContent>
@@ -45,14 +49,10 @@ const DeleteProductAlert = ({ productId }: DeleteDialogProps) => {
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-        <AlertDialogAction
-          onClick={() => executeDeleteProduct({ id: productId })}
-        >
-          Continuar
-        </AlertDialogAction>
+        <AlertDialogAction onClick={onDeleteClick}>Continuar</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   );
 };
 
-export default DeleteProductAlert;
+export default DeleteSaleAlert;
