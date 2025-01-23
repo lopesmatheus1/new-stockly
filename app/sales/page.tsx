@@ -7,9 +7,14 @@ import { saleTableColumns } from "./_components/table-columns";
 const Sales = async () => {
   const sales = await getSales();
   const products = await getProducts();
-  const options = products.map((product) => ({
+  const productOptions = products.map((product) => ({
     value: product.id,
     label: product.name,
+  }));
+  const tableData = sales.map((sale) => ({
+    ...sale,
+    products,
+    productOptions,
   }));
   return (
     <div className="mx-8 my-8 w-full rounded-lg bg-white">
@@ -19,12 +24,9 @@ const Sales = async () => {
           <h2 className="text-2xl font-semibold text-foreground">Produtos</h2>
         </div>
 
-        <SheetSaleButton products={products} productOptions={options} />
+        <SheetSaleButton products={products} productOptions={productOptions} />
       </div>
-      <DataTable
-        columns={saleTableColumns}
-        data={JSON.parse(JSON.stringify(sales))}
-      />
+      <DataTable columns={saleTableColumns} data={tableData} />
     </div>
   );
 };
