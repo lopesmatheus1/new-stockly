@@ -34,7 +34,7 @@ import {
   TableFooter,
 } from "@/app/_components/ui/table";
 import { FormatCurrency } from "@/app/_helpers/currency";
-import SalesTableDropdownMenu from "./table-dropdown-menu";
+import UpsertSalesTableDropdownMenu from "./upsert-table-dropdown-menu";
 import { createSale } from "@/app/_actions/sales/create-sale";
 import { useToast } from "@/app/_hooks/use-toast";
 import { useAction } from "next-safe-action/hooks";
@@ -242,7 +242,10 @@ const UpsertSheetContent = ({
                 {FormatCurrency(product.price * product.quantity)}
               </TableCell>
               <TableCell>
-                <SalesTableDropdownMenu onDelete={onDelete} product={product} />
+                <UpsertSalesTableDropdownMenu
+                  onDelete={onDelete}
+                  product={product}
+                />
               </TableCell>
             </TableRow>
           ))}
