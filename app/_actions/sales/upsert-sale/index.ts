@@ -11,7 +11,7 @@ export const upsertSale = actionClient
     const isUpdate = Boolean(id);
 
     await db.$transaction(async (trx) => {
-      if (id) {
+      if (isUpdate) {
         const existingSale = await trx.sale.findUnique({
           where: { id },
           include: { saleProducts: true },
@@ -78,5 +78,6 @@ export const upsertSale = actionClient
     });
 
     revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath("/sales");
   });
