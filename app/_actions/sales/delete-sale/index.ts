@@ -7,19 +7,43 @@ import { returnValidationErrors } from "next-safe-action";
 export const deleteSale = actionClient
   .schema(deleteSaleSchema)
   .action(async ({ parsedInput: { id } }) => {
-    if (!id)
-      returnValidationErrors(deleteSaleSchema, {
-        _errors: ["A venda não existe"],
+    await db.$transaction(async (trx) => {
+      if (!id)
+        returnValidationErrors(deleteSaleSchema, {
+          _errors: ["A venda não existe"],
+        });
+      const existingSale = await db.sale.findUnique({ where: { id } });
+      if (!existingSale)
+        returnValidationErrors(deleteSaleSchema, {
+          _errors: ["A venda não foi encontrada"],
+        });
+
+      const sale = await db.sale.findUnique({
+        where: { id },
+        include: {
+          saleProducts: true,
+        },
       });
-    const existingSale = await db.sale.findUnique({ where: { id } });
-    if (!existingSale)
-      returnValidationErrors(deleteSaleSchema, {
-        _errors: ["A venda não foi encontrada"],
+      await trx.sale.delete({
+        where: {
+          id,
+        },
       });
-    await db.sale.delete({
-      where: {
-        id,
-      },
+
+      if (!sale) return;
+      for (const product of sale.saleProducts) {
+        await trx.product.update({
+          where: { id: product.productId },
+          data: {
+            stock: {
+              increment: product.quantity,
+            },
+          },
+        });
+      }
     });
+
+    revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath("/sales");
   });
