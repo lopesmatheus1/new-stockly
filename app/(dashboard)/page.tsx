@@ -11,12 +11,21 @@ import {
   SummaryCardValue,
 } from "./_components/summary-card";
 import { getDashboard } from "../_data-access/dashboard/get-dashboard";
+import { format } from "path";
+import { FormatCurrency } from "../_helpers/currency";
+import RevenueChart from "./_components/revenue-chart";
 
 export default async function Home() {
-  const { todayRevenue, totalProducts, totalRevenue, totalSales, totalStock } =
-    await getDashboard();
+  const {
+    todayRevenue,
+    totalProducts,
+    totalRevenue,
+    totalSales,
+    totalStock,
+    totalLast14DaysRevenue,
+  } = await getDashboard();
   return (
-    <div className="mx-8 my-8 w-full space-y-2 rounded-lg bg-white">
+    <div className="mx-8 my-8 flex w-full flex-col space-y-2 rounded-lg bg-white">
       <div className="flex w-full justify-between px-2 py-8">
         <div className="flex flex-col">
           <span className="text-primary">Dashboard</span>
@@ -66,6 +75,13 @@ export default async function Home() {
           <SummaryCardTitle>Produtos</SummaryCardTitle>
           <SummaryCardValue>{totalProducts}</SummaryCardValue>
         </SummaryCard>
+      </div>
+
+      <div className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-6">
+        <p className="text-2xl font-semibold text-slate-900">Receita</p>
+        <p>Últimos 14 dias</p>
+
+        <RevenueChart data={totalLast14DaysRevenue} />
       </div>
     </div>
   );
