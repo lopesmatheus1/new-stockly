@@ -3,7 +3,7 @@ import { db } from "@/app/_lib/prisma";
 import { Product } from "@prisma/client";
 
 export interface ProductsDto extends Product {
-  status: "OUT_OF_STOCK" | "IN_STOCK";
+  status?: "OUT_OF_STOCK" | "IN_STOCK";
 }
 
 export const getProducts = async (): Promise<ProductsDto[]> => {

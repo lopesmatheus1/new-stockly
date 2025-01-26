@@ -7,6 +7,14 @@ export interface DayTotalRevenue {
   day: string;
   totalRevenue: number;
 }
+
+export interface MostSoldProductsDto {
+  name: string;
+  totalSold: number;
+  status: "IN_STOCK" | "OUT_OF_STOCK";
+  price: number;
+  productId: string;
+}
 interface DashboardDto {
   totalRevenue: number;
   todayRevenue: number;
@@ -14,6 +22,7 @@ interface DashboardDto {
   totalStock: number;
   totalProducts: number;
   totalLast14DaysRevenue: DayTotalRevenue[];
+  mostSoldProducts: MostSoldProductsDto[];
 }
 
 export const getDashboard = async (): Promise<DashboardDto> => {
@@ -71,15 +80,39 @@ export const getDashboard = async (): Promise<DashboardDto> => {
     },
   });
   const totalProductsPromise = db.product.count();
+  const mostSoldProductsQuery = `
+  SELECT "Product"."name", SUM("SaleProduct"."quantity") as "totalSold", "Product"."price", "Product"."stock", "Product"."id" as "productId"
+  FROM "SaleProduct"
+  JOIN "Product" ON "SaleProduct"."productId" = "Product"."id"
+  GROUP BY "Product"."name", "Product"."price", "Product"."stock", "Product"."id"
+  ORDER BY "totalSold" DESC
+  LIMIT 5;
+`;
+  const mostSoldProductsPromise = db.$queryRawUnsafe<
+    {
+      productId: string;
+      name: string;
+      totalSold: number;
+      stock: number;
+      price: number;
+    }[]
+  >(mostSoldProductsQuery);
 
-  const [totalRevenue, todayRevenue, totalSales, totalStock, totalProducts] =
-    await Promise.all([
-      totalRevenuePromise,
-      todayRevenuePromise,
-      totalProductsPromise,
-      totalStockPromise,
-      totalSalesPromise,
-    ]);
+  const [
+    totalRevenue,
+    todayRevenue,
+    totalSales,
+    totalStock,
+    totalProducts,
+    mostSoldProducts,
+  ] = await Promise.all([
+    totalRevenuePromise,
+    todayRevenuePromise,
+    totalProductsPromise,
+    totalStockPromise,
+    totalSalesPromise,
+    mostSoldProductsPromise,
+  ]);
   return {
     totalRevenue: totalRevenue[0].totalRevenue,
     todayRevenue: todayRevenue[0].todayRevenue,
@@ -87,5 +120,10 @@ export const getDashboard = async (): Promise<DashboardDto> => {
     totalStock: Number(totalStock._sum.stock),
     totalProducts,
     totalLast14DaysRevenue,
+    mostSoldProducts: mostSoldProducts.map((product) => ({
+      ...product,
+      totalSold: Number(product.totalSold),
+      status: product.stock > 0 ? "IN_STOCK" : "OUT_OF_STOCK",
+    })),
   };
 };

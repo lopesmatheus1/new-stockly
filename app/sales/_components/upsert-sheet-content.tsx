@@ -60,7 +60,7 @@ interface UpsertSheetContentProps {
   saleId?: string;
   productOptions: ComboboxOption[];
   products: ProductsDto[];
-  defaultSelectedProducts: SelectedProduct[];
+  defaultSelectedProducts?: SelectedProduct[];
   onSubmitSuccess: () => void;
 }
 

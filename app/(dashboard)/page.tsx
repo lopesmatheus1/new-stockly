@@ -11,9 +11,9 @@ import {
   SummaryCardValue,
 } from "./_components/summary-card";
 import { getDashboard } from "../_data-access/dashboard/get-dashboard";
-import { format } from "path";
-import { FormatCurrency } from "../_helpers/currency";
+
 import RevenueChart from "./_components/revenue-chart";
+import MostSoldProductItem from "./_components/most-sold-product-item";
 
 export default async function Home() {
   const {
@@ -23,6 +23,7 @@ export default async function Home() {
     totalSales,
     totalStock,
     totalLast14DaysRevenue,
+    mostSoldProducts,
   } = await getDashboard();
   return (
     <div className="mx-8 my-8 flex w-full flex-col space-y-2 rounded-lg bg-white">
@@ -39,7 +40,7 @@ export default async function Home() {
             <DollarSign />
           </SummaryCardIcon>
           <SummaryCardTitle>Receita Total</SummaryCardTitle>
-          <SummaryCardValue>R${totalRevenue}</SummaryCardValue>
+          <SummaryCardValue>R${Number(totalRevenue)}</SummaryCardValue>
         </SummaryCard>
 
         <SummaryCard>
@@ -47,7 +48,7 @@ export default async function Home() {
             <DollarSign />
           </SummaryCardIcon>
           <SummaryCardTitle>Receita Hoje</SummaryCardTitle>
-          <SummaryCardValue>R${todayRevenue}</SummaryCardValue>
+          <SummaryCardValue>R${Number(todayRevenue)}</SummaryCardValue>
         </SummaryCard>
       </div>
 
@@ -77,11 +78,22 @@ export default async function Home() {
         </SummaryCard>
       </div>
 
-      <div className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-6">
-        <p className="text-2xl font-semibold text-slate-900">Receita</p>
-        <p>Últimos 14 dias</p>
+      <div className="grid min-h-0 grid-cols-[2.5fr,1fr] gap-3">
+        <div className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-6">
+          <p className="text-2xl font-semibold text-slate-900">Receita</p>
+          <p className="pb-2">Últimos 14 dias</p>
+          <RevenueChart data={totalLast14DaysRevenue} />
+        </div>
 
-        <RevenueChart data={totalLast14DaysRevenue} />
+        <div className="flex h-full flex-col space-y-2 overflow-hidden rounded-xl bg-white p-6">
+          <p className="text-2xl font-semibold text-slate-900">Mais vendidos</p>
+
+          <div className="space-y-3 overflow-y-auto">
+            {mostSoldProducts.map((product) => (
+              <MostSoldProductItem key={product.productId} product={product} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
