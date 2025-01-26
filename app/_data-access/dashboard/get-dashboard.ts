@@ -31,7 +31,8 @@ export const getDashboard = async (): Promise<DashboardDto> => {
       `
       SELECT SUM("unitPrice" * "quantity") as "totalRevenue"
       FROM "SaleProduct"
-      WHERE "createdAt" >= $1 AND "createdAt" <= $2;
+      JOIN "Sale" ON "SaleProduct"."saleId" = "Sale"."id"
+      WHERE "Sale"."date" >= $1 AND "Sale"."date" <= $2;
     `,
       day.startOf("day").toDate(),
       day.endOf("day").toDate(),
